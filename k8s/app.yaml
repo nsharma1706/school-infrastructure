@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: school-service
+  namespace: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: school-service
+  template:
+    metadata:
+      labels:
+        app: school-service
+    spec:
+      containers:
+        - name: school-service
+          image: 759712674659.dkr.ecr.ap-south-1.amazonaws.com/school-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: school-config
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: school-service
+  namespace: prod
+spec:
+  selector:
+    app: school-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: school-worker
+  namespace: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: school-worker
+  template:
+    metadata:
+      labels:
+        app: school-worker
+    spec:
+      containers:
+        - name: school-worker
+          image: 759712674659.dkr.ecr.ap-south-1.amazonaws.com/school-worker:latest
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: school-config
