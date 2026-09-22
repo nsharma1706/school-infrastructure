@@ -70,3 +70,71 @@ spec:
           envFrom:
             - secretRef:
                 name: school-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: school-frontend
+  namespace: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: school-frontend
+  template:
+    metadata:
+      labels:
+        app: school-frontend
+    spec:
+      containers:
+        - name: school-frontend
+          image: 759712674659.dkr.ecr.ap-south-1.amazonaws.com/school-frontend:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: school-frontend
+  namespace: prod
+spec:
+  selector:
+    app: school-frontend
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: school-admin
+  namespace: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: school-admin
+  template:
+    metadata:
+      labels:
+        app: school-admin
+    spec:
+      containers:
+        - name: school-admin
+          image: 759712674659.dkr.ecr.ap-south-1.amazonaws.com/school-admin:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: school-admin
+  namespace: prod
+spec:
+  selector:
+    app: school-admin
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
